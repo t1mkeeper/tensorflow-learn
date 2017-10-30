@@ -58,21 +58,27 @@ h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 #这样可以在训练过程中启用dropout，在测试过程中关闭dropout。 
 keep_prob = tf.placeholder(tf.float32)
 h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
-
+                                              
 #softmax输出层
 W_fc2 = weight_variable([1024, 10])
 b_fc2 = bias_variable([10])
 
-y_conv=tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
-# y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+# y_conv=tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
+y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
 #训练和评估模型
 #用更加复杂的ADAM优化器来做梯度最速下降，在feed_dict中加入额外的参数keep_prob来控制dropout比例
-cross_entropy = -tf.reduce_sum(y_*tf.log(y_conv))
+# cross_entropy = -tf.reduce_sum(y_*tf.log(y_conv))
+# train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+# correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
+# accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+# sess.run(tf.initialize_all_variables())
+
+cross_entropy = tf.reduce_mean(
+tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv))
 train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
-correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-sess.run(tf.initialize_all_variables())
+correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 for i in range(20000):
   batch = mnist.train.next_batch(50)
